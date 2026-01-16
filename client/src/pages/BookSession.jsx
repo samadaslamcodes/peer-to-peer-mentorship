@@ -55,7 +55,14 @@ const BookSession = () => {
             const token = localStorage.getItem('token');
 
             // Combine date and time
-            const scheduledAt = new Date(`${formData.date}T${formData.time}`);
+            const dateStr = `${formData.date}T${formData.time}`;
+            const scheduledAt = new Date(dateStr);
+
+            if (isNaN(scheduledAt.getTime())) {
+                setError('Please select a valid date and time');
+                setSubmitting(false);
+                return;
+            }
 
             const meetingData = {
                 mentorId,
@@ -139,13 +146,15 @@ const BookSession = () => {
 
                             <div>
                                 <p className="text-slate-500 font-medium">With</p>
-                                <p className="text-slate-900">{createdMeeting.mentor.name}</p>
+                                <p className="text-slate-900">{createdMeeting.mentor?.name || 'Mentor'}</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-slate-500 font-medium">Date & Time</p>
-                                    <p className="text-slate-900">{new Date(createdMeeting.scheduledAt).toLocaleString()}</p>
+                                    <p className="text-slate-900">
+                                        {createdMeeting.scheduledAt ? new Date(createdMeeting.scheduledAt).toLocaleString() : 'N/A'}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-slate-500 font-medium">Duration</p>
@@ -215,7 +224,7 @@ const BookSession = () => {
                             </div>
                             <div>
                                 <h3 className="font-bold text-slate-900">{mentor.user?.name}</h3>
-                                <p className="text-sm text-slate-600">{mentor.skills?.slice(0, 3).join(', ')}</p>
+                                <p className="text-sm text-slate-600">{mentor.skills?.slice(0, 3)?.join(', ')}</p>
                             </div>
                         </div>
                     </div>

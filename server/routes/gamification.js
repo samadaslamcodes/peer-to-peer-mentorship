@@ -13,4 +13,9 @@ router.post('/award', auth, gamificationController.awardPoints);
 // @access  Public
 router.get('/leaderboard', gamificationController.getLeaderboard);
 
+// @route   POST api/gamification/redeem
+// @desc    Redeem points for rewards
+// @access  Private
+router.post('/redeem', auth, gamificationController.redeemReward);
+
 module.exports = router;

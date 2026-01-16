@@ -6,6 +6,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const seedData = require('./seed');
+const Message = require('./models/Message');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +29,10 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000 // Fail fast if not reachable
     });
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+
+    // Seed data on Atlas connection to ensure mentors exist
+    console.log('🌱 Checking/Seeding database...');
+    await seedData();
   } catch (error) {
     console.error('❌ Primary MongoDB Connection Failed:', error.message);
 
@@ -71,8 +76,26 @@ io.on('connection', (socket) => {
     console.log(`User ${socket.id} joined room ${roomId}`);
   });
 
-  socket.on('send_message', (data) => {
-    socket.to(data.roomId).emit('receive_message', data);
+  socket.on('send_message', async (data) => {
+    console.log('📨 Message received on server:', data);
+    try {
+      // Save message to database
+      const newMessage = new Message({
+        room: data.room,
+        sender: data.senderId,
+        senderName: data.author,
+        message: data.message,
+        time: data.time
+      });
+      await newMessage.save();
+      console.log('✅ Message saved to DB');
+
+      // Emit to others in room
+      socket.to(data.room).emit('receive_message', data);
+      console.log(`📤 Message emitted to room: ${data.room}`);
+    } catch (err) {
+      console.error('❌ Socket Message Error:', err);
+    }
   });
 
   socket.on('disconnect', () => {
@@ -99,6 +122,7 @@ app.use('/api/matching', matchingRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/meetings', meetingsRoutes);
+app.use('/api/chat', require('./routes/chat'));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

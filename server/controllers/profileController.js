@@ -1,7 +1,43 @@
 const MentorProfile = require('../models/MentorProfile');
 const User = require('../models/User');
+const Withdrawal = require('../models/Withdrawal');
 
 // Get Current User Profile
+
+// requestWithdrawal
+exports.requestWithdrawal = async (req, res) => {
+    try {
+        const { amount, method, details } = req.body;
+        const profile = await MentorProfile.findOne({ user: req.user.id });
+
+        if (!profile) {
+            return res.status(404).json({ message: 'Profile not found' });
+        }
+
+        if (profile.availableBalance < amount) {
+            return res.status(400).json({ message: 'Insufficient available balance' });
+        }
+
+        // Create withdrawal record
+        const withdrawal = new Withdrawal({
+            mentor: req.user.id,
+            amount,
+            method,
+            details
+        });
+
+        await withdrawal.save();
+
+        // Deduct from balance
+        profile.availableBalance -= amount;
+        await profile.save();
+
+        res.json({ success: true, message: 'Withdrawal request submitted successfully', profile });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
 exports.getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');

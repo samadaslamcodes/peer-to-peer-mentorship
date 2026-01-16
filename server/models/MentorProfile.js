@@ -11,6 +11,13 @@ const MentorProfileSchema = new mongoose.Schema({
     rating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
     points: { type: Number, default: 0 },
+    level: {
+        type: String,
+        enum: ['Rookie', 'Bronze', 'Silver', 'Gold'],
+        default: 'Rookie'
+    },
+    totalEarnings: { type: Number, default: 0 },
+    availableBalance: { type: Number, default: 0 },
     badges: [{
         name: String,
         icon: String,

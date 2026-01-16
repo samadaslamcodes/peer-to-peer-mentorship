@@ -34,6 +34,6 @@ This is a full-stack MERN application connecting students with peer mentors.
 Check the `docs/` folder for detailed design documents:
 - [System Architecture](docs/SYSTEM_ARCHITECTURE.md)
 - [Database Schema](docs/DATABASE_SCHEMA.md)
-- [API Blueprint](docs/API_BLUEPRINT.md)
+- [API Blueprint](docs/API_BLUEPRINT.md)cd
 - [Frontend UI/UX](docs/FRONTEND_UI_UX.md)
 - [SRS](docs/SRS.md)

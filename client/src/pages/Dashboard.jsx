@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, CheckCircle, Clock, Award, User, BookOpen, MessageSquare, LogOut, Search, Trophy, Video } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Award, User, BookOpen, MessageSquare, LogOut, Search, Trophy, Video, Gift, Lock, X, CreditCard, DollarSign } from 'lucide-react';
 import MeetingCard from '../components/MeetingCard';
 
 const Dashboard = () => {
@@ -11,6 +11,17 @@ const Dashboard = () => {
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [withdrawMethod, setWithdrawMethod] = useState('paypal');
+    const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [withdrawDetails, setWithdrawDetails] = useState({
+        paypalEmail: '',
+        accountName: '',
+        accountNumber: '',
+        bankName: '',
+        ifsc: '',
+        businessId: ''
+    });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -77,6 +88,47 @@ const Dashboard = () => {
             cancelled: 'bg-red-100 text-red-800'
         };
         return colors[status] || 'bg-gray-100 text-gray-800';
+    };
+
+    const handleRedeem = async (rewardType) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('http://localhost:5000/api/gamification/redeem', { rewardType }, {
+                headers: { 'x-auth-token': token }
+            });
+
+            if (res.data.success) {
+                setProfile(res.data.profile);
+                alert(res.data.message);
+            }
+        } catch (err) {
+            console.error('Redeem error:', err);
+            alert(err.response?.data?.message || 'Failed to redeem reward');
+        }
+    };
+
+    const handleWithdraw = async (e) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post('http://localhost:5000/api/profile/withdraw', {
+                amount: parseFloat(withdrawAmount),
+                method: withdrawMethod,
+                details: withdrawDetails
+            }, {
+                headers: { 'x-auth-token': token }
+            });
+
+            if (res.data.success) {
+                setProfile(res.data.profile);
+                setShowWithdrawModal(false);
+                setWithdrawAmount('');
+                alert(res.data.message);
+            }
+        } catch (err) {
+            console.error('Withdraw error:', err);
+            alert(err.response?.data?.message || 'Failed to submit withdrawal request');
+        }
     };
 
     if (loading) {
@@ -146,15 +198,34 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-accent-500 to-accent-600 text-white p-6 rounded-2xl shadow-lg shadow-accent-500/20">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-accent-100 text-sm font-medium">Your Role</p>
-                            <p className="text-2xl font-bold mt-1 capitalize">{user?.role}</p>
-                        </div>
-                        {user?.role === 'mentor' ? <Award className="w-10 h-10 opacity-80" /> : <BookOpen className="w-10 h-10 opacity-80" />}
-                    </div>
+                <div className="bg-gradient-to-br from-accent-500 to-accent-600 text-white p-6 rounded-2xl shadow-lg shadow-accent-500/20 text-center">
+                    <p className="text-accent-100 text-sm font-medium">Your Role</p>
+                    <p className="text-2xl font-bold mt-1 capitalize">{user?.role}</p>
                 </div>
+
+                {user?.role === 'mentor' && profile && (
+                    <>
+                        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg shadow-indigo-500/20">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-indigo-100 text-sm font-medium">Mentor Level</p>
+                                    <p className="text-3xl font-bold mt-1">{profile.level || 'Bronze'}</p>
+                                </div>
+                                <Trophy className="w-10 h-10 opacity-80" />
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-6 rounded-2xl shadow-lg shadow-emerald-500/20">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-emerald-100 text-sm font-medium">Total Earnings</p>
+                                    <p className="text-3xl font-bold mt-1">${profile.totalEarnings || 0}</p>
+                                </div>
+                                <Award className="w-10 h-10 opacity-80" />
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Upcoming Meetings Section */}
@@ -360,8 +431,299 @@ const Dashboard = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Mentor Earnings & Paychecks Section */}
+                    {user?.role === 'mentor' && (
+                        <div className="card border-l-4 border-l-emerald-500">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                                <Award className="w-5 h-5 text-emerald-600" />
+                                Earnings & Paychecks
+                            </h2>
+
+                            <div className="bg-emerald-50 rounded-xl p-4 mb-6 flex justify-between items-center border border-emerald-100">
+                                <div>
+                                    <p className="text-emerald-800 text-xs font-bold uppercase tracking-wider">Available Balance</p>
+                                    <p className="text-2xl font-black text-emerald-900">${(profile?.availableBalance || 0).toFixed(2)}</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowWithdrawModal(true)}
+                                    className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700 transition shadow-md shadow-emerald-500/20"
+                                >
+                                    Withdraw Now
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                                    <Clock className="w-4 h-4" />
+                                    Recent Paychecks
+                                </h3>
+
+                                {[
+                                    { date: 'Oct 15, 2024', amount: profile?.totalEarnings ? (profile.totalEarnings / 4).toFixed(2) : 0, status: 'Paid' },
+                                    { date: 'Sep 15, 2024', amount: profile?.totalEarnings ? (profile.totalEarnings / 5).toFixed(2) : 0, status: 'Paid' }
+                                ].map((pay, i) => (
+                                    <div key={i} className="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-white">
+                                        <div>
+                                            <p className="font-bold text-slate-800">{pay.date}</p>
+                                            <p className="text-xs text-slate-500 font-medium">Monthly Payout</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-black text-slate-900">${pay.amount}</p>
+                                            <span className="text-[10px] font-bold text-emerald-600 uppercase bg-emerald-50 px-2 py-0.5 rounded">{pay.status}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Points Redemption System */}
+                    {user?.role === 'mentor' && (
+                        <div className="card border-l-4 border-l-primary-500 overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                                <Trophy className="w-20 h-20" />
+                            </div>
+
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                                <Gift className="w-5 h-5 text-primary-600" />
+                                Rewards & Redemption
+                            </h2>
+
+                            <div className="space-y-4">
+                                <div className={`p-5 rounded-2xl border-2 transition-all ${profile?.points >= 1000 ? 'border-primary-200 bg-primary-50/30' : 'border-slate-100 bg-slate-50/50 grayscale opacity-60'}`}>
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="font-black text-slate-800 uppercase tracking-tight">Elite Mentor Badge</h3>
+                                                {profile?.points >= 1000 ? (
+                                                    <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded font-black">UNLOCKED</span>
+                                                ) : (
+                                                    <span className="text-[10px] bg-slate-400 text-white px-2 py-0.5 rounded font-black flex items-center gap-1">
+                                                        <Lock className="w-2 h-2" /> {1000 - (profile?.points || 0)} XP TO GO
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-slate-600">Claim your exclusive 'Elite' badge and appear at the top of search results.</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl">
+                                            👑
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRedeem('badge')}
+                                        disabled={profile?.points < 1000}
+                                        className={`w-full mt-4 py-2.5 rounded-xl font-black text-sm uppercase tracking-widest transition-all ${profile?.points >= 1000
+                                            ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-500/30'
+                                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        {profile?.points >= 1000 ? 'Redeem Now' : 'Locked'}
+                                    </button>
+                                </div>
+
+                                <div className={`p-5 rounded-2xl border-2 transition-all ${profile?.points >= 1000 ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100 bg-slate-50/50 grayscale opacity-60'}`}>
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="font-black text-slate-800 uppercase tracking-tight">$100 Cash Payout</h3>
+                                                {profile?.points >= 1000 ? (
+                                                    <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded font-black">READY</span>
+                                                ) : (
+                                                    <span className="text-[10px] bg-slate-400 text-white px-2 py-0.5 rounded font-black flex items-center gap-1">
+                                                        <Lock className="w-2 h-2" /> {1000 - (profile?.points || 0)} XP TO GO
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-slate-600">Trade 1000 XP points for an immediate $100 balance boost.</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-emerald-100 flex items-center justify-center text-2xl text-emerald-600 font-bold">
+                                            $
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRedeem('cash')}
+                                        disabled={profile?.points < 1000}
+                                        className={`w-full mt-4 py-2.5 rounded-xl font-black text-sm uppercase tracking-widest transition-all ${profile?.points >= 1000
+                                            ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/30'
+                                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        {profile?.points >= 1000 ? 'Claim $100 Cash' : 'Locked'}
+                                    </button>
+                                </div>
+
+                                <div className={`p-5 rounded-2xl border-2 transition-all ${profile?.points >= 1500 ? 'border-accent-200 bg-accent-50/30' : 'border-slate-100 bg-slate-50/50 grayscale opacity-60'}`}>
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="font-black text-slate-800 uppercase tracking-tight">Premium Profile Theme</h3>
+                                                {profile?.points >= 1500 ? (
+                                                    <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded font-black">UNLOCKED</span>
+                                                ) : (
+                                                    <span className="text-[10px] bg-slate-400 text-white px-2 py-0.5 rounded font-black flex items-center gap-1">
+                                                        <Lock className="w-2 h-2" /> {1500 - (profile?.points || 0)} XP TO GO
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-slate-600">Unlock a custom dark-mode profile theme with animated backgrounds.</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-2xl">
+                                            ✨
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRedeem('theme')}
+                                        disabled={profile?.points < 1500}
+                                        className={`w-full mt-4 py-2.5 rounded-xl font-black text-sm uppercase tracking-widest transition-all ${profile?.points >= 1500
+                                            ? 'bg-accent-600 text-white hover:bg-accent-700 shadow-lg shadow-accent-500/30'
+                                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        {profile?.points >= 1500 ? 'Redeem Now' : 'Locked'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Withdrawal Modal */}
+            {showWithdrawModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        {/* Modal Header */}
+                        <div className="bg-emerald-600 p-6 text-white flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <CreditCard className="w-6 h-6" />
+                                <h3 className="text-xl font-bold">Withdraw Earnings</h3>
+                            </div>
+                            <button onClick={() => setShowWithdrawModal(false)} className="bg-white/20 p-2 rounded-full hover:bg-white/30 truncate transition">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleWithdraw} className="p-8 space-y-6">
+                            {/* Amount Input */}
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Withdraw Amount ($)</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                                    <input
+                                        type="number"
+                                        required
+                                        min="1"
+                                        max={profile?.availableBalance}
+                                        value={withdrawAmount}
+                                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                                        className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition font-bold"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <p className="text-xs text-slate-500 mt-2 font-medium">Max available: <span className="text-emerald-600 font-bold">${profile?.availableBalance.toFixed(2)}</span></p>
+                            </div>
+
+                            {/* Method Selector */}
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">Select Payment Method</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {['paypal', 'bank', 'b2c'].map((m) => (
+                                        <button
+                                            key={m}
+                                            type="button"
+                                            onClick={() => setWithdrawMethod(m)}
+                                            className={`py-3 rounded-xl border-2 transition-all font-bold text-xs uppercase ${withdrawMethod === m
+                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                                                : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
+                                                }`}
+                                        >
+                                            {m}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Dynamic Method Details */}
+                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+                                {withdrawMethod === 'paypal' && (
+                                    <div>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">PayPal Email Address</label>
+                                        <input
+                                            type="email"
+                                            required
+                                            value={withdrawDetails.paypalEmail}
+                                            onChange={(e) => setWithdrawDetails({ ...withdrawDetails, paypalEmail: e.target.value })}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm"
+                                            placeholder="your-email@paypal.com"
+                                        />
+                                    </div>
+                                )}
+
+                                {withdrawMethod === 'bank' && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="col-span-2">
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Account Holder Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={withdrawDetails.accountName}
+                                                onChange={(e) => setWithdrawDetails({ ...withdrawDetails, accountName: e.target.value })}
+                                                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm"
+                                                placeholder="Full Name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Account Number</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={withdrawDetails.accountNumber}
+                                                onChange={(e) => setWithdrawDetails({ ...withdrawDetails, accountNumber: e.target.value })}
+                                                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm"
+                                                placeholder="Numbers only"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">IFSC / BIC Code</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={withdrawDetails.ifsc}
+                                                onChange={(e) => setWithdrawDetails({ ...withdrawDetails, ifsc: e.target.value })}
+                                                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm"
+                                                placeholder="IFSC000123"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {withdrawMethod === 'b2c' && (
+                                    <div>
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Business / Merchant ID</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={withdrawDetails.businessId}
+                                            onChange={(e) => setWithdrawDetails({ ...withdrawDetails, businessId: e.target.value })}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm"
+                                            placeholder="Enter Merchant ID"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2"
+                            >
+                                <DollarSign className="w-5 h-5" />
+                                Submit Payout Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

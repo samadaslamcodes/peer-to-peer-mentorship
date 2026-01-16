@@ -103,6 +103,9 @@ function getMentorProfileData(userId, name) {
             rating: 4.8,
             reviewCount: 24,
             points: 850,
+            level: 'Bronze', // 850 > 700
+            totalEarnings: 1250,
+            availableBalance: 1000, // 80% of 1250
             badges: [
                 { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2024-01-15') },
                 { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2024-06-20') }
@@ -123,6 +126,9 @@ function getMentorProfileData(userId, name) {
             rating: 4.9,
             reviewCount: 31,
             points: 1250,
+            level: 'Gold', // 1250 > 1000
+            totalEarnings: 2400,
+            availableBalance: 1920, // 80% of 2400
             badges: [
                 { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2023-11-10') },
                 { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2024-03-15') },
@@ -143,78 +149,100 @@ function getMentorProfileData(userId, name) {
             rating: 4.7,
             reviewCount: 18,
             points: 620,
+            level: 'Rookie', // < 700
+            totalEarnings: 800,
+            availableBalance: 640,
             badges: [
-                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2024-02-20') },
-                { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2024-08-10') }
+                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2024-02-12') }
             ],
             availability: [
-                { day: 'Monday', slots: ['11:00 AM', '3:00 PM'] },
-                { day: 'Wednesday', slots: ['9:00 AM', '2:00 PM', '4:00 PM'] },
-                { day: 'Friday', slots: ['10:00 AM'] }
+                { day: 'Monday', slots: ['4:00 PM', '5:00 PM'] },
+                { day: 'Wednesday', slots: ['4:00 PM', '5:00 PM'] }
             ]
         },
         'David Kim': {
             user: userId,
-            skills: ['Mobile Development', 'React Native', 'iOS', 'Android'],
-            bio: 'Mobile app developer passionate about creating amazing user experiences. Teaching both native and cross-platform development.',
-            university: 'Carnegie Mellon',
-            degree: 'Computer Science',
+            skills: ['UI/UX Design', 'Figma', 'Product Design'],
+            bio: 'Product designer with a focus on user-centric design. Experience in both startups and large tech companies.',
+            university: 'Rhode Island School of Design',
+            degree: 'Graphic Design',
             isApproved: true,
             rating: 4.6,
             reviewCount: 15,
             points: 480,
+            level: 'Rookie', // < 700
+            totalEarnings: 600,
+            availableBalance: 480,
             badges: [
-                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2024-03-05') },
-                { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2024-09-15') }
+                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2024-03-01') }
             ],
             availability: [
-                { day: 'Tuesday', slots: ['2:00 PM', '4:00 PM'] },
-                { day: 'Thursday', slots: ['11:00 AM', '1:00 PM', '3:00 PM'] }
+                { day: 'Tuesday', slots: ['11:00 AM', '12:00 PM'] },
+                { day: 'Friday', slots: ['2:00 PM', '3:00 PM'] }
             ]
         },
         'Jessica Williams': {
             user: userId,
-            skills: ['UI/UX Design', 'Figma', 'CSS', 'Design Systems'],
-            bio: 'UI/UX designer helping students create beautiful and functional interfaces. Expert in modern design tools and principles.',
-            university: 'Rhode Island School of Design',
-            degree: 'Design & Technology',
+            skills: ['Mathematics', 'Statistics', 'Probability'],
+            bio: 'Math enthusiast helping students master calculus, statistics, and linear algebra.',
+            university: 'Princeton University',
+            degree: 'Mathematics',
             isApproved: true,
-            rating: 4.9,
-            reviewCount: 27,
+            rating: 5.0,
+            reviewCount: 42,
             points: 920,
+            level: 'Silver', // 920 > 900
+            totalEarnings: 1800,
+            availableBalance: 1440,
             badges: [
-                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2024-01-01') },
-                { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2024-05-20') }
+                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2023-09-10') },
+                { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2023-12-05') },
+                { name: 'Master Mentor', icon: '🥇', earnedAt: new Date('2024-04-20') }
             ],
             availability: [
-                { day: 'Monday', slots: ['1:00 PM', '3:00 PM'] },
-                { day: 'Wednesday', slots: ['10:00 AM', '2:00 PM'] },
-                { day: 'Friday', slots: ['9:00 AM', '11:00 AM', '2:00 PM'] }
+                { day: 'Wednesday', slots: ['9:00 AM', '10:00 AM', '11:00 AM'] },
+                { day: 'Thursday', slots: ['9:00 AM', '10:00 AM', '11:00 AM'] }
             ]
         },
         'Alex Thompson': {
             user: userId,
-            skills: ['DevOps', 'AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-            bio: 'DevOps engineer with cloud expertise. Teaching students modern deployment practices and cloud infrastructure.',
-            university: 'Georgia Tech',
-            degree: 'Computer Engineering',
+            skills: ['C++', 'Algorithms', 'Competitive Programming'],
+            bio: 'Competitive programmer ranked in top 1% globally. Expert in data structures and algorithm optimization.',
+            university: 'Carnegie Mellon University',
+            degree: 'Computer Science',
             isApproved: true,
-            rating: 4.8,
-            reviewCount: 22,
+            rating: 4.6,
+            reviewCount: 27,
             points: 750,
+            level: 'Bronze', // 750 > 700
+            totalEarnings: 1500,
+            availableBalance: 1200,
             badges: [
-                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2024-02-01') },
-                { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2024-07-15') }
+                { name: 'Rookie Mentor', icon: '🥉', earnedAt: new Date('2023-08-15') },
+                { name: 'Expert Mentor', icon: '🥈', earnedAt: new Date('2024-01-30') }
             ],
             availability: [
-                { day: 'Tuesday', slots: ['10:00 AM', '2:00 PM'] },
-                { day: 'Thursday', slots: ['9:00 AM', '1:00 PM'] },
-                { day: 'Friday', slots: ['11:00 AM', '3:00 PM'] }
+                { day: 'Monday', slots: ['5:00 PM', '6:00 PM', '7:00 PM'] },
+                { day: 'Thursday', slots: ['5:00 PM', '6:00 PM', '7:00 PM'] }
             ]
         }
     };
 
-    return profiles[name] || profiles['Sarah Johnson'];
+    return profiles[name] || {
+        user: userId,
+        skills: [],
+        bio: '',
+        university: '',
+        degree: '',
+        isApproved: true,
+        rating: 0,
+        reviewCount: 0,
+        points: 0,
+        level: 'Rookie',
+        totalEarnings: 0,
+        badges: [],
+        availability: []
+    };
 }
 
 module.exports = seedData;

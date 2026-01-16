@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Meeting = require('../models/Meeting');
 const User = require('../models/User');
+const MentorProfile = require('../models/MentorProfile');
 const auth = require('../middleware/auth');
 const googleMeetService = require('../services/googleMeetService');
 
@@ -18,7 +19,16 @@ router.post('/create', auth, async (req, res) => {
         }
 
         // Get mentor and learner details
-        const mentor = await User.findById(mentorId);
+        let mentor = await User.findById(mentorId);
+
+        // If not found as User, it might be a MentorProfile ID
+        if (!mentor) {
+            const mentorProfile = await MentorProfile.findById(mentorId).populate('user');
+            if (mentorProfile) {
+                mentor = mentorProfile.user;
+            }
+        }
+
         const learner = await User.findById(req.user.id);
 
         if (!mentor) {
@@ -38,7 +48,7 @@ router.post('/create', auth, async (req, res) => {
 
         // Save meeting to database
         const meeting = new Meeting({
-            mentor: mentorId,
+            mentor: mentor._id, // Save the User ID, not the Profile ID
             learner: req.user.id,
             subject,
             description,

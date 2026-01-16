@@ -18,4 +18,9 @@ router.post('/', auth, profileController.updateProfile);
 // @access  Public
 router.get('/mentors', profileController.getAllMentors);
 
+// @route   POST api/profile/withdraw
+// @desc    Request a withdrawal
+// @access  Private
+router.post('/withdraw', auth, profileController.requestWithdrawal);
+
 module.exports = router;

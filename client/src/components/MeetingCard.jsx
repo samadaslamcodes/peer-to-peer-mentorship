@@ -83,17 +83,23 @@ const MeetingCard = ({ meeting, userRole }) => {
                         href={meeting.meetingLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 btn-primary flex items-center justify-center gap-2 text-sm"
+                        className="flex-grow btn-primary flex items-center justify-center gap-2 text-sm"
                     >
                         <Video className="w-4 h-4" />
-                        Join Google Meet
-                        <ExternalLink className="w-3 h-3" />
+                        Join Meet
                     </a>
                 )}
 
                 <Link
+                    to={`/chat?room=${meeting._id}&name=${otherUser?.name}`}
+                    className="flex-1 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold hover:bg-indigo-100 transition text-sm flex items-center justify-center gap-2 border border-indigo-100"
+                >
+                    Chat
+                </Link>
+
+                <Link
                     to={`/meetings/${meeting._id}`}
-                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium hover:bg-slate-200 transition text-sm"
+                    className="px-4 py-2 bg-slate-50 text-slate-600 rounded-xl font-bold hover:bg-slate-100 transition text-sm border border-slate-100"
                 >
                     Details
                 </Link>
