@@ -66,13 +66,21 @@ const seedData = async () => {
 
         // Check if mentors already exist
         for (const mentorData of mentorUsers) {
-            const existingUser = await User.findOne({ email: mentorData.email });
-            if (existingUser) {
-                console.log(`⏭️  Skipping ${mentorData.name} - already exists`);
+            let user = await User.findOne({ email: mentorData.email });
+
+            if (user) {
+                // Update gender if missing or different
+                if (user.gender !== mentorData.gender) {
+                    user.gender = mentorData.gender;
+                    await user.save();
+                    console.log(`Updated gender for ${user.name} to ${user.gender}`);
+                } else {
+                    console.log(`⏭️  Skipping ${mentorData.name} - already exists and gender matches`);
+                }
                 continue;
             }
 
-            const user = new User(mentorData);
+            user = new User(mentorData);
             await user.save();
             console.log(`✅ Created user: ${user.name}`);
 

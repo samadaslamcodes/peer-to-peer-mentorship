@@ -27,9 +27,17 @@ exports.findMentors = async (req, res) => {
         // Filter by gender if provided
         let filteredMentors = mentors;
         if (gender && gender !== 'any') {
-            filteredMentors = mentors.filter(m =>
-                m.user && m.user.gender === gender.toLowerCase()
-            );
+            console.log(`Filtering for gender: ${gender}`);
+            filteredMentors = mentors.filter(m => {
+                const userGender = m.user?.gender?.toLowerCase();
+                const targetGender = gender.toLowerCase();
+                const matches = userGender === targetGender;
+                if (!matches) {
+                    console.log(`Mentor ${m.user?.name} gender "${userGender}" does not match "${targetGender}"`);
+                }
+                return matches;
+            });
+            console.log(`Found ${filteredMentors.length} mentors after gender filter`);
         }
         if (skill) {
             const regex = new RegExp(skill, 'i');

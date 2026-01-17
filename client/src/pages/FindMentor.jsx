@@ -131,9 +131,11 @@ const FindMentor = () => {
                                                         {mentor.level || 'Rookie'}
                                                     </span>
                                                     {mentor.user?.gender && (
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${mentor.user.gender === 'female' ? 'bg-pink-100 text-pink-600' :
-                                                            mentor.user.gender === 'male' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>
-                                                            {mentor.user.gender.charAt(0).toUpperCase()}
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter ${mentor.user.gender === 'female' ? 'bg-pink-100 text-pink-600' :
+                                                                mentor.user.gender === 'male' ? 'bg-blue-100 text-blue-600' :
+                                                                    'bg-slate-100 text-slate-600'
+                                                            }`}>
+                                                            {mentor.user.gender}
                                                         </span>
                                                     )}
                                                 </div>
