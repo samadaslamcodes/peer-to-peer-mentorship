@@ -5,9 +5,9 @@ We are proud to acknowledge the following individuals who have contributed to th
 | Contributor | Role(s) |
 | :--- | :--- |
 | **Abdussalam** | Project Lead, Tester, Backend Developer |
-| **Abdul Samad** | Front End Developer |
-| **Daniyal Amjad** | Backend Developer |
-| **Raheel** | Backend + Database |
+| **Abdul Samad** | Front End Developer | UI/UX Designer
+| **Daniyal Amjad** | Backend Developer | Database Handler
+| **Raheel** | Backend Developer |Tester
 | **Minhaj Hussain** | Documentation & Database |
 
 ---
