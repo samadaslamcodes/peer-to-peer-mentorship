@@ -5,13 +5,14 @@ import { Link } from 'react-router-dom';
 const FindMentor = () => {
     const [mentors, setMentors] = useState([]);
     const [skill, setSkill] = useState('');
+    const [gender, setGender] = useState('any');
     const [loading, setLoading] = useState(false);
 
     const searchMentors = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get(`http://localhost:5000/api/matching/find?skill=${skill}`, {
+            const res = await axios.get(`http://localhost:5000/api/matching/find?skill=${skill}&gender=${gender}`, {
                 headers: token ? { 'x-auth-token': token } : {}
             });
             setMentors(res.data);
@@ -37,20 +38,43 @@ const FindMentor = () => {
         <div className="max-w-6xl mx-auto mt-10">
             <h1 className="text-3xl font-bold mb-8 text-center text-indigo-700 font-heading">Find Your Perfect Mentor</h1>
 
-            <form onSubmit={onSubmit} className="flex justify-center mb-10">
-                <input
-                    type="text"
-                    placeholder="Search by skill (e.g. React, Python, Math)"
-                    value={skill}
-                    onChange={(e) => setSkill(e.target.value)}
-                    className="w-full max-w-md px-4 py-3 border border-slate-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
-                />
-                <button
-                    type="submit"
-                    className="bg-primary-600 text-white px-8 py-3 rounded-r-xl hover:bg-primary-700 transition font-bold shadow-md shadow-primary-500/20"
-                >
-                    Search
-                </button>
+            <form onSubmit={onSubmit} className="flex flex-col md:flex-row justify-center items-center gap-4 mb-10">
+                <div className="flex w-full max-w-lg">
+                    <input
+                        type="text"
+                        placeholder="Search by skill (e.g. React, Python, Math)"
+                        value={skill}
+                        onChange={(e) => setSkill(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
+                    />
+                    <button
+                        type="submit"
+                        className="bg-primary-600 text-white px-8 py-3 rounded-r-xl hover:bg-primary-700 transition font-bold shadow-md shadow-primary-500/20"
+                    >
+                        Search
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+                    <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Gender:</span>
+                    <select
+                        value={gender}
+                        onChange={(e) => {
+                            setGender(e.target.value);
+                            // Auto trigger search on change
+                            const newGender = e.target.value;
+                            const token = localStorage.getItem('token');
+                            axios.get(`http://localhost:5000/api/matching/find?skill=${skill}&gender=${newGender}`, {
+                                headers: token ? { 'x-auth-token': token } : {}
+                            }).then(res => setMentors(res.data));
+                        }}
+                        className="bg-transparent focus:outline-none text-slate-700 font-bold"
+                    >
+                        <option value="any">Any</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
             </form>
 
             {loading ? (
@@ -100,12 +124,18 @@ const FindMentor = () => {
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{mentor.user.name}</h3>
                                                     <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter ${mentor.level === 'Gold' ? 'bg-yellow-500 text-white' :
-                                                            mentor.level === 'Silver' ? 'bg-slate-400 text-white' :
-                                                                mentor.level === 'Bronze' ? 'bg-orange-600 text-white' :
-                                                                    'bg-slate-200 text-slate-500 font-bold'
+                                                        mentor.level === 'Silver' ? 'bg-slate-400 text-white' :
+                                                            mentor.level === 'Bronze' ? 'bg-orange-600 text-white' :
+                                                                'bg-slate-200 text-slate-500 font-bold'
                                                         }`}>
                                                         {mentor.level || 'Rookie'}
                                                     </span>
+                                                    {mentor.user?.gender && (
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${mentor.user.gender === 'female' ? 'bg-pink-100 text-pink-600' :
+                                                            mentor.user.gender === 'male' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>
+                                                            {mentor.user.gender.charAt(0).toUpperCase()}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase">{mentor.points || 0} XP Points</p>
                                             </div>

@@ -3,7 +3,7 @@ const MentorProfile = require('../models/MentorProfile');
 // Find mentors based on skills and availability
 exports.findMentors = async (req, res) => {
     try {
-        const { skill, day } = req.query;
+        const { skill, day, gender } = req.query;
 
         // Base query: only show approved mentors
         // UNLESS it's the current user's own profile (so they can see themselves)
@@ -18,11 +18,19 @@ exports.findMentors = async (req, res) => {
         }
 
         const mentors = await MentorProfile.find(query)
-            .populate('user', ['name', 'avatar'])
+            .populate({
+                path: 'user',
+                select: 'name avatar gender'
+            })
             .sort({ rating: -1 });
 
-        // Filter by skill if provided
+        // Filter by gender if provided
         let filteredMentors = mentors;
+        if (gender && gender !== 'any') {
+            filteredMentors = mentors.filter(m =>
+                m.user && m.user.gender === gender.toLowerCase()
+            );
+        }
         if (skill) {
             const regex = new RegExp(skill, 'i');
             filteredMentors = mentors.filter(m =>
@@ -48,7 +56,7 @@ exports.findMentors = async (req, res) => {
 exports.getMentorById = async (req, res) => {
     try {
         const mentor = await MentorProfile.findById(req.params.id)
-            .populate('user', ['name', 'email', 'avatar']);
+            .populate('user', ['name', 'email', 'avatar', 'gender']);
 
         if (!mentor) {
             return res.status(404).json({ message: 'Mentor not found' });

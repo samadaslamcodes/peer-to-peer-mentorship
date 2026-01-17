@@ -19,6 +19,7 @@ const seedData = async () => {
                 email: 'sarah.johnson@university.edu',
                 password: await bcrypt.hash('password123', 10),
                 role: 'mentor',
+                gender: 'female',
                 isVerified: true
             },
             {
@@ -26,6 +27,7 @@ const seedData = async () => {
                 email: 'michael.chen@university.edu',
                 password: await bcrypt.hash('password123', 10),
                 role: 'mentor',
+                gender: 'male',
                 isVerified: true
             },
             {
@@ -33,6 +35,7 @@ const seedData = async () => {
                 email: 'emily.rodriguez@university.edu',
                 password: await bcrypt.hash('password123', 10),
                 role: 'mentor',
+                gender: 'female',
                 isVerified: true
             },
             {
@@ -40,6 +43,7 @@ const seedData = async () => {
                 email: 'david.kim@university.edu',
                 password: await bcrypt.hash('password123', 10),
                 role: 'mentor',
+                gender: 'male',
                 isVerified: true
             },
             {
@@ -47,6 +51,7 @@ const seedData = async () => {
                 email: 'jessica.williams@university.edu',
                 password: await bcrypt.hash('password123', 10),
                 role: 'mentor',
+                gender: 'female',
                 isVerified: true
             },
             {
@@ -54,6 +59,7 @@ const seedData = async () => {
                 email: 'alex.thompson@university.edu',
                 password: await bcrypt.hash('password123', 10),
                 role: 'mentor',
+                gender: 'male',
                 isVerified: true
             }
         ];
