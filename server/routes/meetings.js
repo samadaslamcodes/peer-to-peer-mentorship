@@ -147,29 +147,30 @@ router.get('/', auth, async (req, res) => {
 // @desc    Get a specific meeting
 // @access  Private
 router.get('/:id', auth, async (req, res) => {
-    const meeting = await Meeting.findById(req.params.id)
-        .populate('mentor', 'name email')
-        .populate('learners', 'name email');
+    try {
+        const meeting = await Meeting.findById(req.params.id)
+            .populate('mentor', 'name email')
+            .populate('learners', 'name email');
 
-    if (!meeting) {
-        return res.status(404).json({ message: 'Meeting not found' });
+        if (!meeting) {
+            return res.status(404).json({ message: 'Meeting not found' });
+        }
+
+        // Check if user is part of the meeting
+        const isLearner = meeting.learners.some(l => l._id.toString() === req.user.id);
+        if (meeting.mentor._id.toString() !== req.user.id && !isLearner) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        res.json({
+            success: true,
+            meeting
+        });
+
+    } catch (error) {
+        console.error('Get meeting error:', error);
+        res.status(500).json({ message: 'Failed to fetch meeting' });
     }
-
-    // Check if user is part of the meeting
-    const isLearner = meeting.learners.some(l => l._id.toString() === req.user.id);
-    if (meeting.mentor._id.toString() !== req.user.id && !isLearner) {
-        return res.status(403).json({ message: 'Access denied' });
-    }
-
-    res.json({
-        success: true,
-        meeting
-    });
-
-} catch (error) {
-    console.error('Get meeting error:', error);
-    res.status(500).json({ message: 'Failed to fetch meeting' });
-}
 });
 
 // @route   PUT /api/meetings/:id
@@ -186,8 +187,8 @@ router.put('/:id', auth, async (req, res) => {
         }
 
         // Only mentor or learner can update
-        if (meeting.mentor.toString() !== req.user.id &&
-            meeting.learner.toString() !== req.user.id) {
+        const isLearner = meeting.learners.some(l => l.toString() === req.user.id);
+        if (meeting.mentor.toString() !== req.user.id && !isLearner) {
             return res.status(403).json({ message: 'Access denied' });
         }
 
@@ -209,7 +210,7 @@ router.put('/:id', auth, async (req, res) => {
 
         await meeting.save();
         await meeting.populate('mentor', 'name email');
-        await meeting.populate('learner', 'name email');
+        await meeting.populate('learners', 'name email');
 
         res.json({
             success: true,
@@ -235,8 +236,8 @@ router.delete('/:id', auth, async (req, res) => {
         }
 
         // Only mentor or learner can cancel
-        if (meeting.mentor.toString() !== req.user.id &&
-            meeting.learner.toString() !== req.user.id) {
+        const isLearner = meeting.learners.some(l => l.toString() === req.user.id);
+        if (meeting.mentor.toString() !== req.user.id && !isLearner) {
             return res.status(403).json({ message: 'Access denied' });
         }
 
@@ -272,8 +273,8 @@ router.post('/:id/join', auth, async (req, res) => {
         }
 
         // Check if user is part of the meeting
-        if (meeting.mentor.toString() !== req.user.id &&
-            meeting.learner.toString() !== req.user.id) {
+        const isLearner = meeting.learners.some(l => l.toString() === req.user.id);
+        if (meeting.mentor.toString() !== req.user.id && !isLearner) {
             return res.status(403).json({ message: 'Access denied' });
         }
 
@@ -307,8 +308,8 @@ router.post('/:id/complete', auth, async (req, res) => {
         }
 
         // Check if user is part of the meeting
-        if (meeting.mentor.toString() !== req.user.id &&
-            meeting.learner.toString() !== req.user.id) {
+        const isLearner = meeting.learners.some(l => l.toString() === req.user.id);
+        if (meeting.mentor.toString() !== req.user.id && !isLearner) {
             return res.status(403).json({ message: 'Access denied' });
         }
 

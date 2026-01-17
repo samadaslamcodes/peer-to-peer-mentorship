@@ -37,8 +37,9 @@ const MeetingCard = ({ meeting, userRole }) => {
         return `in ${minutes}m`;
     };
 
-    const otherUser = userRole === 'mentor' ? meeting.learner : meeting.mentor;
+    const otherUser = userRole === 'mentor' ? meeting.learners?.[0] : meeting.mentor;
     const isUpcoming = new Date(meeting.scheduledAt) > new Date();
+    const learnerCount = meeting.learners?.length || 0;
 
     return (
         <div className="card hover:shadow-lg transition-all border-l-4 border-l-primary-500">
@@ -51,9 +52,21 @@ const MeetingCard = ({ meeting, userRole }) => {
 
                     <div className="flex items-center gap-2 text-sm text-slate-500">
                         <UserIcon className="w-4 h-4" />
-                        <span>with <span className="font-medium text-slate-700">{otherUser?.name}</span></span>
+                        {userRole === 'mentor' ? (
+                            <span>with <span className="font-medium text-slate-700">
+                                {learnerCount > 1 ? `${otherUser?.name} + ${learnerCount - 1} others` : (otherUser?.name || 'Students')}
+                            </span></span>
+                        ) : (
+                            <span>with <span className="font-medium text-slate-700">{meeting.mentor?.name}</span></span>
+                        )}
                     </div>
                 </div>
+
+                {meeting.isGroup && (
+                    <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ml-2">
+                        Group Session
+                    </span>
+                )}
 
                 {isUpcoming && (
                     <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
