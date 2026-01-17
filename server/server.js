@@ -114,6 +114,7 @@ const profileRoutes = require('./routes/profile');
 const matchingRoutes = require('./routes/matching');
 const sessionRoutes = require('./routes/session');
 const gamificationRoutes = require('./routes/gamification');
+const notificationsRoutes = require('./routes/notifications');
 const meetingsRoutes = require('./routes/meetings');
 
 app.use('/api/auth', authRoutes);
@@ -122,6 +123,7 @@ app.use('/api/matching', matchingRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/meetings', meetingsRoutes);
+app.use('/api/notifications', notificationsRoutes);
 app.use('/api/chat', require('./routes/chat'));
 
 const PORT = process.env.PORT || 5000;

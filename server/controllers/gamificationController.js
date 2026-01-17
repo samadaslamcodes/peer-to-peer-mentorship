@@ -1,4 +1,5 @@
 const MentorProfile = require('../models/MentorProfile');
+const notificationController = require('./notificationController');
 
 // Award Points
 exports.awardPoints = async (req, res) => {
@@ -38,6 +39,16 @@ exports.awardPoints = async (req, res) => {
         }
 
         await profile.save();
+
+        // Notify user
+        await notificationController.createNotification(
+            userId,
+            'Points Awarded!',
+            `You have been awarded ${points} XP for: ${reason || 'General contribution'}`,
+            'gamification',
+            '/leaderboard'
+        );
+
         res.json(profile);
     } catch (err) {
         console.error(err.message);

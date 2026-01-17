@@ -6,10 +6,18 @@ const meetingSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    learner: {
+    learners: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    }],
+    isGroup: {
+        type: Boolean,
+        default: false
+    },
+    maxParticipants: {
+        type: Number,
+        default: 1
     },
     subject: {
         type: String,
@@ -28,6 +36,10 @@ const meetingSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 60 // minutes
+    },
+    pricePerLearner: {
+        type: Number,
+        default: 0
     },
     meetingLink: {
         type: String
@@ -57,7 +69,7 @@ const meetingSchema = new mongoose.Schema({
 
 // Index for efficient queries
 meetingSchema.index({ mentor: 1, scheduledAt: -1 });
-meetingSchema.index({ learner: 1, scheduledAt: -1 });
+meetingSchema.index({ learners: 1, scheduledAt: -1 });
 meetingSchema.index({ status: 1, scheduledAt: 1 });
 
 // Virtual for checking if meeting is upcoming

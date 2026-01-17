@@ -5,6 +5,7 @@ const User = require('../models/User');
 const MentorProfile = require('../models/MentorProfile');
 const auth = require('../middleware/auth');
 const googleMeetService = require('../services/googleMeetService');
+const notificationController = require('../controllers/notificationController');
 
 // @route   POST /api/meetings/create
 // @desc    Create a new meeting with Google Meet link
@@ -62,22 +63,33 @@ router.post('/create', auth, async (req, res) => {
 
         // Save meeting to database
         const meeting = new Meeting({
-            mentor: mentor._id, // Save the User ID, not the Profile ID
-            learner: req.user.id,
+            mentor: mentor._id,
+            learners: [req.user.id], // Use learners array
             subject,
             description,
             scheduledAt: new Date(scheduledAt),
             duration: parseInt(duration),
             meetingLink,
             meetingId,
-            status: 'scheduled'
+            status: 'scheduled',
+            isGroup: req.body.isGroup || false,
+            maxParticipants: req.body.maxParticipants || 1
         });
 
         await meeting.save();
 
+        // Notify mentor
+        await notificationController.createNotification(
+            mentor._id,
+            'New Meeting Booking',
+            `${learner.name} has booked a ${meeting.isGroup ? 'group' : ''} session: ${subject}`,
+            'meeting',
+            '/dashboard'
+        );
+
         // Populate user details
         await meeting.populate('mentor', 'name email');
-        await meeting.populate('learner', 'name email');
+        await meeting.populate('learners', 'name email');
 
         res.status(201).json({
             success: true,
@@ -101,7 +113,7 @@ router.get('/', auth, async (req, res) => {
         let query = {
             $or: [
                 { mentor: req.user.id },
-                { learner: req.user.id }
+                { learners: req.user.id }
             ]
         };
 
@@ -116,7 +128,7 @@ router.get('/', auth, async (req, res) => {
 
         const meetings = await Meeting.find(query)
             .populate('mentor', 'name email')
-            .populate('learner', 'name email')
+            .populate('learners', 'name email')
             .sort({ scheduledAt: -1 });
 
         res.json({
@@ -135,30 +147,29 @@ router.get('/', auth, async (req, res) => {
 // @desc    Get a specific meeting
 // @access  Private
 router.get('/:id', auth, async (req, res) => {
-    try {
-        const meeting = await Meeting.findById(req.params.id)
-            .populate('mentor', 'name email')
-            .populate('learner', 'name email');
+    const meeting = await Meeting.findById(req.params.id)
+        .populate('mentor', 'name email')
+        .populate('learners', 'name email');
 
-        if (!meeting) {
-            return res.status(404).json({ message: 'Meeting not found' });
-        }
-
-        // Check if user is part of the meeting
-        if (meeting.mentor._id.toString() !== req.user.id &&
-            meeting.learner._id.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Access denied' });
-        }
-
-        res.json({
-            success: true,
-            meeting
-        });
-
-    } catch (error) {
-        console.error('Get meeting error:', error);
-        res.status(500).json({ message: 'Failed to fetch meeting' });
+    if (!meeting) {
+        return res.status(404).json({ message: 'Meeting not found' });
     }
+
+    // Check if user is part of the meeting
+    const isLearner = meeting.learners.some(l => l._id.toString() === req.user.id);
+    if (meeting.mentor._id.toString() !== req.user.id && !isLearner) {
+        return res.status(403).json({ message: 'Access denied' });
+    }
+
+    res.json({
+        success: true,
+        meeting
+    });
+
+} catch (error) {
+    console.error('Get meeting error:', error);
+    res.status(500).json({ message: 'Failed to fetch meeting' });
+}
 });
 
 // @route   PUT /api/meetings/:id
@@ -317,6 +328,48 @@ router.post('/:id/complete', auth, async (req, res) => {
     } catch (error) {
         console.error('Complete meeting error:', error);
         res.status(500).json({ message: 'Failed to complete meeting' });
+    }
+});
+
+// @route   POST /api/meetings/:id/join-group
+// @desc    Join an existing group meeting
+// @access  Private
+router.post('/:id/join-group', auth, async (req, res) => {
+    try {
+        const meeting = await Meeting.findById(req.params.id);
+
+        if (!meeting) {
+            return res.status(404).json({ message: 'Meeting not found' });
+        }
+
+        if (!meeting.isGroup) {
+            return res.status(400).json({ message: 'This is not a group meeting' });
+        }
+
+        if (meeting.learners.includes(req.user.id)) {
+            return res.status(400).json({ message: 'You are already in this meeting' });
+        }
+
+        if (meeting.learners.length >= meeting.maxParticipants) {
+            return res.status(400).json({ message: 'Meeting is full' });
+        }
+
+        meeting.learners.push(req.user.id);
+        await meeting.save();
+
+        // Notify Mentor
+        await notificationController.createNotification(
+            meeting.mentor,
+            'New Participant Joined',
+            `A new student has joined your group session: ${meeting.subject}`,
+            'meeting',
+            '/dashboard'
+        );
+
+        res.json({ success: true, meeting });
+    } catch (error) {
+        console.error('Join group meeting error:', error);
+        res.status(500).json({ message: 'Failed to join group session' });
     }
 });
 
