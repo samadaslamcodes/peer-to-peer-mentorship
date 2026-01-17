@@ -18,6 +18,20 @@ router.post('/create', auth, async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
+        // Validate booking time limit (must be within 1 month)
+        const bookingDate = new Date(scheduledAt);
+        const now = new Date();
+        const oneMonthFromNow = new Date();
+        oneMonthFromNow.setMonth(now.getMonth() + 1);
+
+        if (bookingDate < now) {
+            return res.status(400).json({ message: 'Meeting date cannot be in the past' });
+        }
+
+        if (bookingDate > oneMonthFromNow) {
+            return res.status(400).json({ message: 'You can only book meetings within a one-month time limit from today.' });
+        }
+
         // Get mentor and learner details
         let mentor = await User.findById(mentorId);
 

@@ -64,6 +64,17 @@ const BookSession = () => {
                 return;
             }
 
+            // Client-side validation for one-month limit
+            const now = new Date();
+            const oneMonthFromNow = new Date();
+            oneMonthFromNow.setMonth(now.getMonth() + 1);
+
+            if (scheduledAt > oneMonthFromNow) {
+                setError('You can only book meetings within a one-month time limit from today.');
+                setSubmitting(false);
+                return;
+            }
+
             const meetingData = {
                 mentorId,
                 subject: formData.subject,
@@ -280,6 +291,7 @@ const BookSession = () => {
                                 onChange={onChange}
                                 required
                                 min={new Date().toISOString().split('T')[0]}
+                                max={new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]}
                                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
                             />
                         </div>
